@@ -6,6 +6,8 @@ import com.kevun1.solpotato.tracking.benefits.Benefit;
 import com.kevun1.solpotato.tracking.benefits.BenefitList;
 import com.kevun1.solpotato.utils.BenefitsParser;
 import com.kevun1.solpotato.utils.ComplexityParser;
+import com.kevun1.solpotato.utils.SubstitutionParser;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.*;
@@ -25,6 +27,7 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = SOLPotato.MOD_ID)
 public class ConfigHandler {
     public static Map<FoodInstance, Double> complexityMap = new HashMap<>();
+    public static Map<FoodInstance, FoodInstance> substitutionMap = new HashMap<>();
     public static List<Double> thresholds = new ArrayList<>();
     public static BenefitList benefitsList = new BenefitList(new ArrayList<>());
 
@@ -34,6 +37,9 @@ public class ConfigHandler {
     public final static String FOOD_KEY = "food";
     public final static String COMPLEXITY_VALUE_KEY = "complexity";
     public final static String ENTRY_KEY = "entries";
+    public final static String SUBSTITUTION_MAP_KEY = "substitution_map";
+    public final static String SUBSTITUTION_OLD_KEY = "substitution_old";
+    public final static String SUBSTITUTION_NEW_KEY = "substitution_new";
 
     public static boolean isFirstAid = false;
 
@@ -45,6 +51,21 @@ public class ConfigHandler {
             String encoded = entry.getKey().encode();
             entryTag.put(FOOD_KEY, StringNBT.valueOf(encoded));
             entryTag.put(COMPLEXITY_VALUE_KEY, DoubleNBT.valueOf(entry.getValue()));
+            list.add(entryTag);
+        }
+        tag.put(ENTRY_KEY, list);
+        return tag;
+    }
+    
+    public static CompoundNBT serializeSubstitutionMap() {
+        CompoundNBT tag = new CompoundNBT();
+        ListNBT list = new ListNBT();
+        for (Map.Entry<FoodInstance, FoodInstance> entry : substitutionMap.entrySet()) {
+            CompoundNBT entryTag = new CompoundNBT();
+            String oldEncoded = entry.getKey().encode();
+            String newEncoded = entry.getValue().encode();
+            entryTag.put(SUBSTITUTION_OLD_KEY, StringNBT.valueOf(oldEncoded));
+            entryTag.put(SUBSTITUTION_NEW_KEY, StringNBT.valueOf(newEncoded));
             list.add(entryTag);
         }
         tag.put(ENTRY_KEY, list);
@@ -68,6 +89,7 @@ public class ConfigHandler {
     public static CompoundNBT serializeConfig() {
         CompoundNBT tag = new CompoundNBT();
         tag.put(COMPLEXITY_MAP_KEY, serializeComplexityMap());
+        tag.put(SUBSTITUTION_MAP_KEY, serializeSubstitutionMap());
         tag.put(THRESHOLDS_KEY, serializeThresholds());
         tag.put(BENEFITS_KEY, serializeBenefitsList());
         return tag;
@@ -75,6 +97,7 @@ public class ConfigHandler {
 
     public static void deserializeConfig(CompoundNBT tag) {
         deserializeComplexityMap(tag.getCompound(COMPLEXITY_MAP_KEY));
+        deserializeSubstitutionMap(tag.getCompound(SUBSTITUTION_MAP_KEY));
         deserializeThresholds(tag.getList(THRESHOLDS_KEY, Constants.NBT.TAG_DOUBLE));
         deserializeBenefitsList(tag.getCompound(BENEFITS_KEY));
     }
@@ -95,6 +118,20 @@ public class ConfigHandler {
         }
         complexityMap = newComplexityMap;
     }
+    
+    public static void deserializeSubstitutionMap(CompoundNBT tag) {
+        ListNBT list = tag.getList(ENTRY_KEY, Constants.NBT.TAG_COMPOUND);
+        Map<FoodInstance, FoodInstance> newSubstitutionMap = new HashMap<>();
+        for (INBT nbt : list) {
+            CompoundNBT cnbt = (CompoundNBT) nbt;
+            String oldFoodString = cnbt.getString(SUBSTITUTION_OLD_KEY);
+            FoodInstance oldFood = FoodInstance.decode(oldFoodString);
+            String newFoodString = cnbt.getString(SUBSTITUTION_NEW_KEY);
+            FoodInstance newFood = FoodInstance.decode(newFoodString);
+            newSubstitutionMap.put(oldFood, newFood);
+        }
+        substitutionMap = newSubstitutionMap;
+    }
 
     public static void deserializeThresholds(ListNBT tag) {
         List<Double> newThresholds = new ArrayList<>();
@@ -105,6 +142,7 @@ public class ConfigHandler {
     @SubscribeEvent
     public static void onServerStart(FMLServerStartingEvent event) {
         complexityMap = ComplexityParser.parse(SOLPotatoConfig.getComplexityUnparsed());
+        substitutionMap = SubstitutionParser.parse(SOLPotatoConfig.getSubstitutionsUnparsed());
         thresholds = SOLPotatoConfig.getThresholds();
         List<List<Benefit>> benefits = BenefitsParser.parse(SOLPotatoConfig.getBenefitsUnparsed());
         benefitsList = new BenefitList(benefits);

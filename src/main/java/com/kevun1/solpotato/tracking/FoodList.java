@@ -135,8 +135,7 @@ public final class FoodList implements FoodCapability {
 		}
 
 		if (SOLPotatoConfig.shouldCount(food)) {
-			FoodInstance newlyEaten = new FoodInstance(food);
-			foodMap.put(newlyEaten, 0);
+			foodMap.put(FoodInstance.substituted(food), 0);
 		}
 	}
 	
@@ -173,7 +172,7 @@ public final class FoodList implements FoodCapability {
 		}
 
 		if (SOLPotatoConfig.shouldCount(food)) {
-			change += calculateDiversityContribution(new FoodInstance(food), 0);
+			change += calculateDiversityContribution(FoodInstance.substituted(food), 0);
 		}
 
 		return change;
@@ -241,13 +240,13 @@ public final class FoodList implements FoodCapability {
 			return -1;
 		}
 
-		return uniqueFoods.get(new FoodInstance(food));
+		return uniqueFoods.get(FoodInstance.substituted(food));
 	}
 
 	@Override
 	public boolean hasEaten(Item food) {
 		if (!food.isFood()) return false;
-		return uniqueFoods.containsKey(new FoodInstance(food));
+		return uniqueFoods.containsKey(FoodInstance.substituted(food));
 	}
 	
 	public void clearFood() {

@@ -1,5 +1,6 @@
 package com.kevun1.solpotato.tracking;
 
+import com.kevun1.solpotato.ConfigHandler;
 import com.kevun1.solpotato.SOLPotato;
 import net.minecraft.item.*;
 import net.minecraft.util.ResourceLocation;
@@ -13,6 +14,11 @@ public final class FoodInstance {
 	
 	public FoodInstance(Item item) {
 		this.item = item;
+	}
+	
+	public static FoodInstance substituted(Item item) {
+		FoodInstance food = new FoodInstance(item);
+		return ConfigHandler.substitutionMap.getOrDefault(food, food);
 	}
 	
 	@Nullable

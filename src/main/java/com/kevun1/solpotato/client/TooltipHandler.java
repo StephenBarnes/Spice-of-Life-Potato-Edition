@@ -1,5 +1,6 @@
 package com.kevun1.solpotato.client;
 
+import com.kevun1.solpotato.ConfigHandler;
 import com.kevun1.solpotato.SOLPotato;
 import com.kevun1.solpotato.SOLPotatoConfig;
 import com.kevun1.solpotato.tracking.FoodInstance;
@@ -41,7 +42,8 @@ public final class TooltipHandler {
 		} else {
 			if (hasBeenEaten) {
 				int lastEaten = foodList.getLastEaten(food);
-				double contribution = FoodList.calculateDiversityContribution(new FoodInstance(food), lastEaten);
+				FoodInstance foodInstance = FoodInstance.substituted(food);
+				double contribution = FoodList.calculateDiversityContribution(foodInstance, lastEaten);
 
 				addDiversityInfoTooltips(tooltip, contribution, lastEaten);
 			}

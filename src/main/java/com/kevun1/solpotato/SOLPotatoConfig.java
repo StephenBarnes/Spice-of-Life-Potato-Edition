@@ -83,6 +83,8 @@ public final class SOLPotatoConfig {
 	public static List<String> getBenefitsUnparsed() { return new ArrayList<>(SERVER.benefitsUnparsed.get()); }
 
 	public static List<String> getComplexityUnparsed() {return new ArrayList<>(SERVER.complexityUnparsed.get());}
+	
+	public static List<String> getSubstitutionsUnparsed() {return new ArrayList<>(SERVER.substitutionsUnparsed.get());}
 
 	public static List<Double> getThresholds() { return new ArrayList<>(SERVER.thresholds.get()); }
 
@@ -141,6 +143,8 @@ public final class SOLPotatoConfig {
 		public final BooleanValue shouldForbiddenCount;
 
 		public final ConfigValue<List<? extends String>> complexityUnparsed;
+		
+		public final ConfigValue<List<? extends String>> substitutionsUnparsed;
 
 		Server(Builder builder) {
 			builder.push("Benefits");
@@ -284,6 +288,27 @@ public final class SOLPotatoConfig {
 							+"\n")
 					.defineList("complexityUnparsed", Lists.newArrayList(
 							"minecraft:golden_carrot,2", "minecraft:golden_carrot,2", "minecraft:enchanted_golden_apple,5"),
+							e -> e instanceof String);
+			
+			substitutionsUnparsed = builder
+					.translation(localizationPath("substitutions_unparsed"))
+					.comment(" Define foods that are substituted with other foods when tracking complexity.\n"
+							+" For instance, we could make baked potatoes be recorded as potatoes, so that the player can't get extra diversity\n"
+							+" just by eating them both raw and cooked. If you want raw potatoes to not count at all, use the blacklist instead.\n"
+							+" Each entry in the list should be a string defining two foods: the food eaten and the food it should be recorded as.\n"
+							+" The format is [registry name of food eaten],[registry name to record]\n"
+							+" Note that tags are NOT currently supported.\n"
+							+"\n")
+					.defineList("substitutionsUnparsed", Lists.newArrayList(
+							"minecraft:baked_potato,minecraft:potato", "minecraft:poisonous_potato,minecraft:potato",
+							"minecraft:cooked_beef,minecraft:beef",
+							"minecraft:cooked_porkchop,minecraft:porkchop",
+							"minecraft:cooked_mutton,minecraft:mutton",
+							"minecraft:cooked_chicken,minecraft:chicken",
+							"minecraft:cooked_salmon,minecraft:salmon",
+							"minecraft:cooked_cod,minecraft:cod",
+							"minecraft:cooked_rabbit,minecraft:rabbit",
+							"minecraft:beetroot_soup,minecraft:beetroot"),
 							e -> e instanceof String);
 
 			builder.pop();
